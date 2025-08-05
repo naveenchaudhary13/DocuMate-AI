@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      DocuMate AI - Your Personal AI Document Assistant
+    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="{% static 'img/icon.png' %}" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  </head>
+  <body class="bg-gradient-to-br from-cyan-100 via-blue-200 to-indigo-300 h-screen flex flex-col overflow-hidden">
+    <!-- Navbar -->
+    <header class="bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-600 shadow px-6 py-4 flex justify-between items-center relative z-20">
+      <!-- Toggle button on sidebar top-left -->
+      <button id="sidebarToggle" aria-label="Toggle sidebar" class="absolute left-0 w-16 h-16 bg-transparent rounded-tr-md rounded-br-md flex items-center justify-center text-white focus:outline-none transition z-30 hover:text-white"><i id="toggleIcon" class="fas fa-bars text-3xl"></i></button>
+
+      <h1 class="text-2xl font-bol text-white flex items-center gap-2 ml-10"><img src="{% static 'img/icon.png' %}" alt="icon" class="w-10 h-10 bg-white rounded-md"> DocuMate AI</h1>
+
+      <div class="relative inline-block text-left text-white text-lg" id="userMenuWrapper">
+        <button id="userMenuBtn" onclick="toggleDropdown()" class="flex items-center gap-2 focus:outline-none">
+          <i class="fas fa-user-circle text-2xl"></i>
+          {% if user.is_authenticated %}
+            <span id="username">{{ user.username }}</span>
+          {% else %}
+            <span id="username">Guest User</span>
+          {% endif %}
+          <i class="fas fa-chevron-down text-sm ml-1"></i>
+        </button>
+
+        <!-- ✅ DROPDOWN MENU -->
+        <div id="dropdownMenu"
+            class="absolute right-0 mt-2 w-48 bg-gradient-to-b from-cyan-100 via-blue-200 to-indigo-300 text-gray-800 rounded-md shadow-lg py-2 z-50 hidden">
+          {% if user.is_authenticated %}
+            {% if user.has_usable_password %}
+              <button onclick="openChangePasswordModal()" class="w-full text-left flex items-center px-4 py-2 text-sm hover:text-indigo-600 gap-2">
+                <i class="fas fa-key"></i> Change Password
+              </button>
+            {% else %}
+              <button onclick="openSetPasswordModal()" class="w-full text-left flex items-center px-4 py-2 text-sm hover:text-indigo-600 gap-2">
+                <i class="fas fa-key"></i> Set Password
+              </button>
+            {% endif %}
+            <a href="{% url 'custom_logout' %}" class="flex items-center px-4 py-2 text-sm hover:text-indigo-600 gap-2">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+          {% else %}
+            <button onclick="openLoginModal()" class="w-full text-left flex items-center px-4 py-2 text-sm hover:text-indigo-600 gap-2">
+              <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+            <button onclick="openSignupModal()" class="w-full text-left flex items-center px-4 py-2 text-sm hover:text-indigo-600 gap-2">
+              <i class="fas fa-user-plus"></i> Signup
+            </button>
+          {% endif %}
+            <button onclick="openManageDocsModal()" class="w-full text-left flex items-center px-4 py-2 text-sm hover:text-indigo-600 gap-2">
+              <i class="fas fa-file-alt"></i> Manage Documents
+            </button>
+            <button onclick="openManageChatsModal()" class="w-full text-left flex items-center px-4 py-2 text-sm hover:text-indigo-600 gap-2">
+              <i class="fas fa-comments"></i> Manage Chats
+            </button>
+            <button onclick="openAboutModal()" class="w-full text-left flex items-center px-4 py-2 text-sm hover:text-indigo-600 gap-2">
+              <i class="fas fa-info-circle"></i> About Us
+            </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- All Modals -->
+    {% include "modals/signup_modal.html" %}
+    {% include "modals/login_modal.html" %}
+    {% include "modals/change_password_modal.html" %}
+    {% include "modals/set_password.html" %}
+    {% include "modals/success_modal.html" %}
+    {% include "modals/doc_modal.html" %}
+    {% include "modals/manage_doc_modal.html" %}
+    {% include "modals/chat_modal.html" %}
+    {% include "modals/manage_chat_modal.html" %}
+    {% include "modals/search_modal.html" %}
+    {% include "modals/about_modal.html" %}
+
+    <div class="flex flex-1 overflow-hidden relative" style="height: calc(100vh - 4rem);">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="bg-gradient-to-b from-cyan-100 via-blue-200 to-indigo-300 shadow-md transition-all duration-300 ease-in-out flex flex-col relative" style="width: 16rem; min-width: 4rem;">
+        <!-- Sidebar nav with icons and text -->
+        <nav id="sidebarContent" class="flex-1 px-4 py-6 overflow-y-auto flex flex-col gap-2">
+          <!-- Menu Items -->
+
+          <!-- New Chat Button -->
+          <div id="newChatBtn" class="flex items-center gap-3 text-indigo-600 cursor-pointer hover:bg-indigo-500 hover:text-white rounded-md px-3 py-2" title="New Chat">
+            <i class="fas fa-plus-circle text-lg"></i>
+            <span class="font-medium sidebar-label">New Chat</span>
+          </div>
+
+          <!-- Search Button -->
+          <div onclick="openSearchModal()" class="flex items-center gap-3 text-indigo-600 cursor-pointer hover:bg-indigo-500 hover:text-white rounded-md px-3 py-2" title="Search">
+            <i class="fas fa-search text-lg"></i>
+            <span class="font-medium sidebar-label">Search</span>
+          </div>
+
+          <!-- Chats Toggle -->
+          <button id="chatsToggleBtn" class="flex items-center gap-3 w-full text-indigo-600 cursor-pointer hover:bg-indigo-500 hover:text-white rounded-md px-3 py-2 font-medium focus:outline-none" aria-expanded="true" aria-controls="chatsList">
+            <i class="fas fa-comments text-lg"></i>
+            <span class="font-medium sidebar-label">Chats</span>
+            <i id="chatsToggleIcon" class="fas fa-chevron-down ml-auto"></i>
+          </button>
+
+          <!-- Chats List -->
+          <div id="chatsList" class="max-h-48 overflow-auto">
+            {% for chat in chats %}
+              <div
+                class="p-2 rounded my-2 me-1 truncate cursor-pointer transition-all duration-150 ease-in-out hover:bg-indigo-400 hover:text-white"
+                title="{{ chat.name }}"
+                data-chat-id="{{ chat.id }}"
+                id="chat-item-{{ chat.id }}"
+              >
+                {{ chat.name }}
+              </div>
+            {% empty %}
+              <div class="text-indigo-400 italic">No chats available.</div>
+            {% endfor %}
+          </div>
+
+          <!-- Documents Toggle -->
+          <button id="docsToggleBtn" class="flex items-center gap-3 w-full text-indigo-600 cursor-pointer hover:bg-indigo-500 hover:text-white rounded-md px-3 py-2 font-medium focus:outline-none" aria-expanded="true" aria-controls="docsList">
+            <i class="fas fa-folder-open text-lg"></i>
+            <span class="font-medium sidebar-label">Documents</span>
+            <i id="docsToggleIcon" class="fas fa-chevron-down ml-auto"></i>
+          </button>
+
+          <!-- Documents List -->
+          <div id="docsList" class="max-h-48 overflow-auto">
+            {% for doc in documents %}
+              <div class="p-2 bg-white rounded my-2 me-1 truncate hover:bg-indigo-500 hover:text-white" title="{{ doc.name }}">{{ doc.name }}</div>
+            {% empty %}
+              <div class="text-indigo-400 italic">No documents uploaded.</div>
+            {% endfor %}
+          </div>
+        </nav>
+      </aside>
+
+      <!-- Main content -->
+      <main class="flex-1 flex flex-col bg-transparent overflow-hidden max-h-[calc(100vh-4rem)]">
+        <!-- Chat window -->
+        <div id="chat-window" class="flex-1 overflow-y-auto scroll-smooth px-6 py-4 flex flex-col space-y-3 chat-window">
+          <div id="chat-loading" class="text-center text-gray-500 hidden">Loading chat...</div>
+          <div id="chat-content" class="block">
+            <div id="placeholder" class="text-gray-500 text-sm text-center">Ask something from your uploaded documents</div>
+          </div>
+        </div>
+
+        <!-- Center loader -->
+        <div id="centerLoader" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-50 hidden">
+          <i class="fas fa-spinner fa-spin text-4xl text-indigo-600"></i>
+        </div>
+
+      </main>
+    </div>
+    <!-- Bottom input bar -->
+    <form id="uploadForm" enctype="multipart/form-data" method="post" action="{% url 'upload_file' %}" class="w-full border-t px-4 py-3 flex flex-wrap sm:flex-nowrap items-center space-x-2 shadow-inner bg-transparent z-30">
+      {% csrf_token %}
+
+      <!-- Wrapper for chips + input -->
+      <div id="chips-input-wrapper" class="flex flex-1 flex-wrap items-center gap-1 px-3 py-2 border rounded-lg bg-white min-h-[42px] max-w-full overflow-x-auto" style="scroll-behavior: smooth;">
+        <!-- Chips will be appended here -->
+        <div id="file-chips-container" class="flex flex-wrap gap-1 max-w-full overflow-x-auto"></div>
+
+        <!-- Actual input for typing query -->
+        <input id="search-input" name="query" type="text" placeholder="Ask something..." autocomplete="off" class="flex-grow min-w-[100px] border-none outline-none focus:ring-0" style="min-width: 100px;" />
+      </div>
+
+      <!-- Send button -->
+      <button type="button" id="sendBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 whitespace-nowrap">Send <i class="fas fa-paper-plane sm:ml-2"></i></button>
+
+      <!-- Upload label -->
+      <label for="file-input" id="uploadLabel" class="cursor-pointer bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 select-none whitespace-nowrap" title="Select files to upload">Select files</label>
+
+      <!-- Upload button (hidden by default) -->
+      <button type="submit" id="uploadBtn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 whitespace-nowrap hidden">Upload <i class="fas fa-upload ml-2"></i></button>
+
+      <!-- Hidden file input -->
+      <input type="file" id="file-input" name="file[]" multiple hidden />
+    </form>        
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/upload.js' %}"></script>
+    <script src="{% static 'js/chat.js' %}"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+      {% if messages %}
+        {% for message in messages %}
+          Toastify({
+            text: "{{ message|escapejs }}",
+            duration: 4000,
+            close: true,
+            gravity: "top",
+            position: "center",
+            stopOnFocus: true,
+            style: {
+              {% if message.tags == 'success' %}
+                background: 'linear-gradient(to right, #22c55e, #16a34a)',
+              {% elif message.tags == 'error' %}
+                background: 'linear-gradient(to right, #ef4444, #b91c1c)',
+              {% elif message.tags == 'info' %}
+                background: 'linear-gradient(to right, #3b82f6, #1e40af)',
+              {% elif message.tags == 'warning' %}
+                background: 'linear-gradient(to right, #facc15, #eab308)',
+              {% else %}
+                background: '#333',
+              {% endif %}
+            },
+            className: "rounded shadow text-md px-3 py-2"
+          }).showToast();
+        {% endfor %}
+      {% endif %}
+    </script>
+  </body>
+</html>

@@ -1,0 +1,138 @@
+@import url("https://fonts.googleapis.com/css2?family=Winky+Rough:ital,wght@0,300..900;1,300..900&display=swap");
+
+body {
+	font-family: "Winky Rough", sans-serif;
+}
+
+.typing {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.typing span {
+	width: 8px;
+	height: 8px;
+	background-color: #4b5563;
+	border-radius: 50%;
+	animation: blink 1.4s infinite both;
+}
+
+.typing span:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.typing span:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+@keyframes blink {
+	0%,
+	80%,
+	100% {
+		opacity: 0;
+	}
+	40% {
+		opacity: 1;
+	}
+}
+
+.animate-fade-in {
+	animation: fade-in 0.6s ease-out forwards;
+	opacity: 0;
+}
+
+@keyframes fade-in {
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+}
+
+@media (max-width: 320px) {
+
+	body {
+		font-size: 12px;
+	}
+
+	header {
+		padding: 0.75rem 0.5rem !important;
+		h1 {
+			font-size: 1.4rem !important;
+		}
+	}
+
+	#toggleIcon {
+		font-size: 1.4rem !important;
+	}
+
+	#sidebarToggle {
+		width: 3rem !important;
+	}
+
+	#username {
+		display: none !important;
+	}
+
+	#userMenuBtn {
+		gap: 2px !important;
+	}
+
+	#sidebarContent {
+		padding-top: 0.75rem !important;
+		padding-bottom: 0.75rem !important;
+		padding-left: 0.5rem !important;
+		padding-right: 0.5rem !important;
+	}
+
+	#chat-window {
+		padding: 1rem 0.5rem !important;
+	}
+
+	#uploadForm {
+		padding: 0.5rem 0.5rem !important;
+	}
+
+	#chips-input-wrapper {
+		margin: 0px 4px 0px 0px !important;
+	}
+
+	#search-input {
+		min-width: 50px !important;
+	}
+
+	#sendBtn {
+		margin: 0px 2px !important;
+		padding-left: 0.5rem !important;
+    	padding-right: 0.5rem !important;
+	}
+
+	#uploadLabel {
+		margin: 0px 2px !important;
+		padding-left: 0.5rem !important;
+    	padding-right: 0.5rem !important;
+	}
+
+	#uploadBtn {
+		margin: 0px 2px !important;
+		padding-left: 0.5rem !important;
+    	padding-right: 0.5rem !important;
+	}
+
+}
+
+@media (min-width: 321px) and (max-width: 376px) {
+  	#chat-window {
+		padding: 1rem 0.6rem !important;
+	}
+}
+
+@media (min-width: 376px) and (max-width: 768px) {
+  	#chat-window {
+		padding: 1rem 0.75rem !important;
+	}
+}
