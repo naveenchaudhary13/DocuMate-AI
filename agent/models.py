@@ -51,7 +51,7 @@ class Profile(models.Model):
     username = models.CharField(max_length=100, blank=True, null=True)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
-    ip_address = models.GenericIPAddressField()
+    ip_address = models.GenericIPAddressField(protocol='both')
     city = models.CharField(max_length=100, blank=True, null=True)
     region = models.CharField(max_length=100, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)

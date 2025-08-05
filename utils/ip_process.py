@@ -5,6 +5,8 @@ from agent.models import Profile
 
 def get_client_ip(request):
     ip = request.META.get("HTTP_X_FORWARDED_FOR") or request.META.get("REMOTE_ADDR")
+    if ip:
+        ip = ip.split(",")[0].strip()
     if ip.startswith("127.") or ip == "::1":
         try:
             ip = requests.get("https://api.ipify.org?format=json", timeout=2).json()["ip"]
