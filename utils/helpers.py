@@ -9,7 +9,9 @@ from pgvector.django import L2Distance
 from django.db import transaction
 
 
-embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+def get_embedding_model():
+    from langchain.embeddings import HuggingFaceEmbeddings
+    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 
 def get_llm_instance():
@@ -144,6 +146,7 @@ def create_document_entry(profile, file_obj):
 
 def save_chunks_with_embeddings(document, text, page_map=None):
     """Save chunks with embeddings."""
+    embedding_model = get_embedding_model()
     chunks = chunk_text(text)
     with transaction.atomic():
         for index, chunk in enumerate(chunks):
@@ -159,6 +162,7 @@ def save_chunks_with_embeddings(document, text, page_map=None):
 
 def search_similar_chunk(query):
     """Search for similar chunks."""
+    embedding_model = get_embedding_model()
     query_embedding = embedding_model.embed_query(query)
 
     result = (
