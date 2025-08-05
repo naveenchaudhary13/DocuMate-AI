@@ -11,7 +11,7 @@ from django.db import transaction
 
 def get_embedding_model():
     from langchain.embeddings import HuggingFaceEmbeddings
-    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
 
 
 def get_llm_instance():
