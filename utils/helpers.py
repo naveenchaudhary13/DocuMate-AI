@@ -1,7 +1,7 @@
-import os, json, re, openpyxl, docx
+import os, json, re, openpyxl, docx, requests
 from PyPDF2 import PdfReader
 from PyPDF2.errors import PdfReadError
-from langchain_huggingface import HuggingFaceEmbeddings
+from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain.schema import SystemMessage, HumanMessage
 from agent.models import Agent, Document, DocumentChunk, Chat, ChatMessage
@@ -9,9 +9,31 @@ from pgvector.django import L2Distance
 from django.db import transaction
 
 
-def get_embedding_model():
-    from langchain.embeddings import HuggingFaceEmbeddings
-    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+load_dotenv()
+
+EMBEDDING_SERVICE_URL = os.getenv(
+    "EMBEDDING_SERVICE_URL",
+    f"{os.getenv('BASE_URL')}/embed",
+)
+
+def get_embeddings_from_service(texts):
+    """Get embeddings from embedding service."""
+    try:
+        response = requests.post(
+            EMBEDDING_SERVICE_URL,
+            json={"texts": texts},
+            timeout=60,
+        )
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print("Embedding service error:", e)
+        raise
+
+    data = response.json()
+    embeddings = data.get("embeddings")
+    if embeddings is None:
+        raise ValueError("Invalid response from embedding service")
+    return embeddings
 
 
 def get_llm_instance():
@@ -146,11 +168,11 @@ def create_document_entry(profile, file_obj):
 
 def save_chunks_with_embeddings(document, text, page_map=None):
     """Save chunks with embeddings."""
-    embedding_model = get_embedding_model()
     chunks = chunk_text(text)
+    vectors = get_embeddings_from_service(chunks)
+
     with transaction.atomic():
-        for index, chunk in enumerate(chunks):
-            vector = embedding_model.embed_query(chunk)
+        for index, (chunk, vector) in enumerate(zip(chunks, vectors)):
             DocumentChunk.objects.create(
                 document=document,
                 content=chunk,
@@ -162,13 +184,13 @@ def save_chunks_with_embeddings(document, text, page_map=None):
 
 def search_similar_chunk(query):
     """Search for similar chunks."""
-    embedding_model = get_embedding_model()
-    query_embedding = embedding_model.embed_query(query)
+    query_embedding = get_embeddings_from_service([query])[0]
 
     result = (
         DocumentChunk.objects
         .annotate(distance=L2Distance('embedding', query_embedding))
-        .order_by('distance').first()
+        .order_by('distance')
+        .first()
     )
     return result
 
