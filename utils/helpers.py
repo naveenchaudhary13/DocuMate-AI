@@ -9,6 +9,7 @@ from pgvector.django import L2Distance
 from django.db import transaction
 
 
+<<<<<<< HEAD
 load_dotenv()
 
 EMBEDDING_SERVICE_URL = os.getenv(
@@ -34,6 +35,11 @@ def get_embeddings_from_service(texts):
     if embeddings is None:
         raise ValueError("Invalid response from embedding service")
     return embeddings
+=======
+def get_embedding_model():
+    from langchain.embeddings import HuggingFaceEmbeddings
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
+>>>>>>> f0334a5b462693a84c9a5a39877d21df9310509b
 
 
 def get_llm_instance():
